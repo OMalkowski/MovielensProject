@@ -1,13 +1,7 @@
 ---
-title: "Movielens"
+title: "Report on Movielens Rating Predictions"
 author: "Olivia Malkowski"
 date: "10/18/2019"
-output: html_document
----
----
-title: "Report on MovieLens Rating Predictions"
-author: "Olivia Malkowski"
-date: "10/14/2019"
 output: github_document
 ---
 
