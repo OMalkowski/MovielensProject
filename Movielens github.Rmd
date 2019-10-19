@@ -13,12 +13,12 @@ output:
 knitr::opts_chunk$set(echo=TRUE)
 ```
 
-```{r}
+```{r echo=FALSE}
 library(knitr)
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
-```{r wrap-hook}
+```{r echo=FALSE}
 library(knitr)
 hook_output = knit_hooks$get('output')
 knit_hooks$set(output = function(x, options) {
