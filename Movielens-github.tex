@@ -1,0 +1,1373 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Report on Movielens Rating Predictions},
+            pdfauthor={Olivia Malkowski},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Report on Movielens Rating Predictions}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Olivia Malkowski}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{10/18/2019}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{contents}{%
+\section{Contents}\label{contents}}
+
+\hypertarget{introduction}{%
+\paragraph{1. Introduction}\label{introduction}}
+
+\hypertarget{overviewexecutive-summary}{%
+\subparagraph{1.1 Overview/Executive
+Summary}\label{overviewexecutive-summary}}
+
+\hypertarget{loading-the-data}{%
+\subparagraph{1.2 Loading the Data}\label{loading-the-data}}
+
+\hypertarget{libraries-and-tidy-data}{%
+\subparagraph{1.3 Libraries and Tidy
+Data}\label{libraries-and-tidy-data}}
+
+\hypertarget{data-summary}{%
+\subparagraph{1.4 Data Summary}\label{data-summary}}
+
+\hypertarget{methods-and-analysis}{%
+\paragraph{2. Methods and Analysis}\label{methods-and-analysis}}
+
+\hypertarget{data-cleaning-and-exploration}{%
+\subparagraph{2.1 Data Cleaning and
+Exploration}\label{data-cleaning-and-exploration}}
+
+\hypertarget{data-visualisation}{%
+\subparagraph{2.2 Data Visualisation}\label{data-visualisation}}
+
+\hypertarget{predictive-model---methods}{%
+\subparagraph{2.3 Predictive Model -
+Methods}\label{predictive-model---methods}}
+
+\hypertarget{results-and-discussion}{%
+\paragraph{3. Results and Discussion}\label{results-and-discussion}}
+
+\hypertarget{partitioning-the-edx-dataset-into-train-and-test-sets}{%
+\subparagraph{3.1 Partitioning the edx dataset into train and test
+sets}\label{partitioning-the-edx-dataset-into-train-and-test-sets}}
+
+\hypertarget{model-1---naive-bayes}{%
+\subparagraph{3.2 Model 1 - Naive Bayes}\label{model-1---naive-bayes}}
+
+\hypertarget{model-2---movie-effect}{%
+\subparagraph{3.3 Model 2 - Movie Effect}\label{model-2---movie-effect}}
+
+\hypertarget{model-3---movie-and-user-effect}{%
+\subparagraph{3.4 Model 3 - Movie and User
+Effect}\label{model-3---movie-and-user-effect}}
+
+\hypertarget{model-4---regularization-movie-effect}{%
+\subparagraph{3.5 Model 4 - Regularization Movie
+Effect}\label{model-4---regularization-movie-effect}}
+
+\hypertarget{model-5---regularization-movie-and-user-effect}{%
+\subparagraph{3.6 Model 5 - Regularization Movie and User
+Effect}\label{model-5---regularization-movie-and-user-effect}}
+
+\hypertarget{model-6---regularization-movie-user-and-genre-effect}{%
+\subparagraph{3.7 Model 6 - Regularization Movie, User, and Genre
+Effect}\label{model-6---regularization-movie-user-and-genre-effect}}
+
+\hypertarget{model-7---regularization-movie-effect-validation}{%
+\subparagraph{3.8 Model 7 - Regularization Movie Effect
+(Validation)}\label{model-7---regularization-movie-effect-validation}}
+
+\hypertarget{model-8---regularization-movie-and-user-effect-validation}{%
+\subparagraph{3.9 Model 8 - Regularization Movie and User Effect
+(Validation)}\label{model-8---regularization-movie-and-user-effect-validation}}
+
+\hypertarget{model-9---regularization-movie-user-and-genre-effect-validation}{%
+\subparagraph{3.10 Model 9 - Regularization Movie, User, and Genre
+Effect
+(Validation)}\label{model-9---regularization-movie-user-and-genre-effect-validation}}
+
+\hypertarget{conclusion}{%
+\paragraph{4. Conclusion}\label{conclusion}}
+
+\hypertarget{summary}{%
+\subparagraph{4.1 Summary}\label{summary}}
+
+\hypertarget{limitations-and-future-work}{%
+\subparagraph{4.2 Limitations and Future
+Work}\label{limitations-and-future-work}}
+
+\hypertarget{introduction-1}{%
+\section{1. Introduction}\label{introduction-1}}
+
+\hypertarget{overviewexecutive-summary-1}{%
+\subsection{1.1 Overview/Executive
+Summary}\label{overviewexecutive-summary-1}}
+
+The following project is focused on the theme of recommendation systems,
+with the objective of predicting the ratings (out of five stars) that
+users will attribute to a particular movie by filtering information and
+accounting for factors such as genre, the user and their history, as
+well as the movie itself. The recommendation system will take into
+consideration the users' ratings to give specific suggestions for future
+movies. Those with the highest predicted ratings will then be
+recommended to the user.
+
+The use of such predictive models is of practical relevance; for
+instance, in 2006, Netflix challenged the public to improve their
+recommendation algorithm by 10\%, providing movie suggestions that were
+better tailored to the users' preferences and interests. Thus, these
+systems play a significant role in helping clients to find products and
+services that are right for them. The ``Netflix Challenge'' evaluated
+the quality of the proposed algorithms using the ``typical error'': the
+Root Mean Square Error (RMSE); as such, the same method will be used to
+determine the strength of a variety of prediction models using the 10M
+version of the MovieLens dataset, made available by the GroupLens
+Research Lab. The goal will be to train a machine learning algorithm
+using the inputs from one subset (named \texttt{edx}) of the database to
+predict movie ratings in the \texttt{validation} set.
+
+\hypertarget{loading-the-data-1}{%
+\subsection{1.2 Loading the Data}\label{loading-the-data-1}}
+
+\hypertarget{note-this-process-could-take-a-couple-of-minutes}{%
+\subsubsection{Note: this process could take a couple of
+minutes}\label{note-this-process-could-take-a-couple-of-minutes}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{(}\OperatorTok{!}\KeywordTok{require}\NormalTok{(tidyverse)) }\KeywordTok{install.packages}\NormalTok{(}\StringTok{"tidyverse"}\NormalTok{, }\DataTypeTok{repos =} \StringTok{"http://cran.us.r-project.org"}\NormalTok{)}
+\ControlFlowTok{if}\NormalTok{(}\OperatorTok{!}\KeywordTok{require}\NormalTok{(caret)) }\KeywordTok{install.packages}\NormalTok{(}\StringTok{"caret"}\NormalTok{, }\DataTypeTok{repos =} \StringTok{"http://cran.us.r-project.org"}\NormalTok{)}
+\ControlFlowTok{if}\NormalTok{(}\OperatorTok{!}\KeywordTok{require}\NormalTok{(data.table)) }\KeywordTok{install.packages}\NormalTok{(}\StringTok{"data.table"}\NormalTok{, }\DataTypeTok{repos =} \StringTok{"http://cran.us.r-project.org"}\NormalTok{)}
+
+\CommentTok{### MovieLens 10M dataset:}
+\CommentTok{### https://grouplens.org/datasets/movielens/10m/}
+\CommentTok{### http://files.grouplens.org/datasets/movielens/ml-10m.zip}
+
+\NormalTok{dl <-}\StringTok{ }\KeywordTok{tempfile}\NormalTok{()}
+\KeywordTok{download.file}\NormalTok{(}\StringTok{"http://files.grouplens.org/datasets/movielens/ml-10m.zip"}\NormalTok{, dl)}
+
+\NormalTok{ratings <-}\StringTok{ }\KeywordTok{fread}\NormalTok{(}\DataTypeTok{text =} \KeywordTok{gsub}\NormalTok{(}\StringTok{"::"}\NormalTok{, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }\KeywordTok{readLines}\NormalTok{(}\KeywordTok{unzip}\NormalTok{(dl, }\StringTok{"ml-10M100K/ratings.dat"}\NormalTok{))),}
+                 \DataTypeTok{col.names =} \KeywordTok{c}\NormalTok{(}\StringTok{"userId"}\NormalTok{, }\StringTok{"movieId"}\NormalTok{, }\StringTok{"rating"}\NormalTok{, }\StringTok{"timestamp"}\NormalTok{))}
+
+\NormalTok{movies <-}\StringTok{ }\KeywordTok{str_split_fixed}\NormalTok{(}\KeywordTok{readLines}\NormalTok{(}\KeywordTok{unzip}\NormalTok{(dl, }\StringTok{"ml-10M100K/movies.dat"}\NormalTok{)), }\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{::"}\NormalTok{, }\DecValTok{3}\NormalTok{)}
+\KeywordTok{colnames}\NormalTok{(movies) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"movieId"}\NormalTok{, }\StringTok{"title"}\NormalTok{, }\StringTok{"genres"}\NormalTok{)}
+\NormalTok{movies <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(movies) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{movieId =} \KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{levels}\NormalTok{(movieId))[movieId],}
+                                           \DataTypeTok{title =} \KeywordTok{as.character}\NormalTok{(title),}
+                                           \DataTypeTok{genres =} \KeywordTok{as.character}\NormalTok{(genres))}
+
+\NormalTok{movielens <-}\StringTok{ }\KeywordTok{left_join}\NormalTok{(ratings, movies, }\DataTypeTok{by =} \StringTok{"movieId"}\NormalTok{)}
+
+\CommentTok{### The validation set will be 10% of MovieLens data:}
+
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DataTypeTok{sample.kind=}\StringTok{"Rounding"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in set.seed(1, sample.kind = "Rounding"): non-uniform 'Rounding'
+## sampler used
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{test_index <-}\StringTok{ }\KeywordTok{createDataPartition}\NormalTok{(}\DataTypeTok{y =}\NormalTok{ movielens}\OperatorTok{$}\NormalTok{rating, }\DataTypeTok{times =} \DecValTok{1}\NormalTok{, }\DataTypeTok{p =} \FloatTok{0.1}\NormalTok{, }\DataTypeTok{list =} \OtherTok{FALSE}\NormalTok{)}
+\NormalTok{edx <-}\StringTok{ }\NormalTok{movielens[}\OperatorTok{-}\NormalTok{test_index,]}
+\NormalTok{temp <-}\StringTok{ }\NormalTok{movielens[test_index,]}
+
+\CommentTok{### Make sure userId and movieId in validation set are also in edx set}
+
+\NormalTok{validation <-}\StringTok{ }\NormalTok{temp }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{semi_join}\NormalTok{(edx, }\DataTypeTok{by =} \StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{semi_join}\NormalTok{(edx, }\DataTypeTok{by =} \StringTok{"userId"}\NormalTok{)}
+
+\CommentTok{### Add rows removed from validation set back into edx set}
+
+\NormalTok{removed <-}\StringTok{ }\KeywordTok{anti_join}\NormalTok{(temp, validation)}
+\NormalTok{edx <-}\StringTok{ }\KeywordTok{rbind}\NormalTok{(edx, removed)}
+
+\KeywordTok{rm}\NormalTok{(dl, ratings, movies, test_index, temp, movielens, removed)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{tidy-data}{%
+\subsection{1.3 Tidy Data}\label{tidy-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{### Additional libraries to install:}
+\KeywordTok{library}\NormalTok{(lubridate)}
+\KeywordTok{library}\NormalTok{(stringr)}
+\KeywordTok{library}\NormalTok{(ggplot2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{### We can check that the data is in tidy format with the as_tibble function:}
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{as_tibble}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 9,000,055 x 6
+##    userId movieId rating timestamp title               genres              
+##     <int>   <dbl>  <dbl>     <int> <chr>               <chr>               
+##  1      1     122      5 838985046 Boomerang (1992)    Comedy|Romance      
+##  2      1     185      5 838983525 Net, The (1995)     Action|Crime|Thrill~
+##  3      1     292      5 838983421 Outbreak (1995)     Action|Drama|Sci-Fi~
+##  4      1     316      5 838983392 Stargate (1994)     Action|Adventure|Sc~
+##  5      1     329      5 838983392 Star Trek: Generat~ Action|Adventure|Dr~
+##  6      1     355      5 838984474 Flintstones, The (~ Children|Comedy|Fan~
+##  7      1     356      5 838983653 Forrest Gump (1994) Comedy|Drama|Romanc~
+##  8      1     362      5 838984885 Jungle Book, The (~ Adventure|Children|~
+##  9      1     364      5 838983707 Lion King, The (19~ Adventure|Animation~
+## 10      1     370      5 838984596 Naked Gun 33 1/3: ~ Action|Comedy       
+## # ... with 9,000,045 more rows
+\end{verbatim}
+
+\hypertarget{data-summary-1}{%
+\subsection{1.4 Data Summary}\label{data-summary-1}}
+
+Before processing the data, it is important to familiarise ourselves
+with the \texttt{edx} dataset. The \texttt{edx} set contains 9000055
+observations of 6 variables, whilst the \texttt{validation} set contains
+999999 observations of 6 variables.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{### We can determine the number of distinct users and movies with the following:}
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{n_users=}\KeywordTok{n_distinct}\NormalTok{(userId),}\DataTypeTok{n_movies=}\KeywordTok{n_distinct}\NormalTok{(movieId))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   n_users n_movies
+## 1   69878    10677
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{### We can look at the first six lines of the `edx` dataset with the "head" function:}
+\KeywordTok{head}\NormalTok{(edx)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   userId movieId rating timestamp                         title
+## 1      1     122      5 838985046              Boomerang (1992)
+## 2      1     185      5 838983525               Net, The (1995)
+## 4      1     292      5 838983421               Outbreak (1995)
+## 5      1     316      5 838983392               Stargate (1994)
+## 6      1     329      5 838983392 Star Trek: Generations (1994)
+## 7      1     355      5 838984474       Flintstones, The (1994)
+##                          genres
+## 1                Comedy|Romance
+## 2         Action|Crime|Thriller
+## 4  Action|Drama|Sci-Fi|Thriller
+## 5       Action|Adventure|Sci-Fi
+## 6 Action|Adventure|Drama|Sci-Fi
+## 7       Children|Comedy|Fantasy
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{### To compute summary statistics for the dataset, we will use:}
+\KeywordTok{summary}\NormalTok{(edx)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      userId         movieId          rating        timestamp        
+##  Min.   :    1   Min.   :    1   Min.   :0.500   Min.   :7.897e+08  
+##  1st Qu.:18124   1st Qu.:  648   1st Qu.:3.000   1st Qu.:9.468e+08  
+##  Median :35738   Median : 1834   Median :4.000   Median :1.035e+09  
+##  Mean   :35870   Mean   : 4122   Mean   :3.512   Mean   :1.033e+09  
+##  3rd Qu.:53607   3rd Qu.: 3626   3rd Qu.:4.000   3rd Qu.:1.127e+09  
+##  Max.   :71567   Max.   :65133   Max.   :5.000   Max.   :1.231e+09  
+##     title              genres         
+##  Length:9000055     Length:9000055    
+##  Class :character   Class :character  
+##  Mode  :character   Mode  :character  
+##                                       
+##                                       
+## 
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{### We then check that there is no missing data:}
+\KeywordTok{any}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(edx))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+
+\hypertarget{methods-and-analysis-1}{%
+\section{2. Methods and Analysis}\label{methods-and-analysis-1}}
+
+\hypertarget{data-cleaning-and-exploration-1}{%
+\subsection{2.1 Data Cleaning and
+Exploration}\label{data-cleaning-and-exploration-1}}
+
+Before commencing the data visualisation process, it is useful to add
+new column variables to our \texttt{edx} and \texttt{validation} sets.
+Upon familiarisation with the dataset, we can observe that the date and
+time of each rating is in \texttt{timestamp} format. To display the data
+in a manner that is meaningful to a lay audience, it would be useful to
+convert these into a typical date format (e.g.~yyyy/mm/dd); we will name
+this column \texttt{date}. In addition, to depict the evolution of movie
+ratings over time, it will be practical to transform the \texttt{date}
+column to a shorter format (e.g.~year); we will name this column
+\texttt{year}.
+
+\hypertarget{add-column---converting-timestamp-to-date-and-year-format}{%
+\subsubsection{\texorpdfstring{Add column - converting
+\texttt{timestamp} to \texttt{date} and \texttt{year}
+format:}{Add column - converting timestamp to date and year format:}}\label{add-column---converting-timestamp-to-date-and-year-format}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{class}\NormalTok{(edx}\OperatorTok{$}\NormalTok{timestamp)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "integer"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx<-edx}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{date=}\KeywordTok{as.Date}\NormalTok{(}\KeywordTok{as.POSIXlt}\NormalTok{(timestamp,}\DataTypeTok{origin=}\StringTok{"1970-01-01"}\NormalTok{,}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{),}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{))}
+\NormalTok{edx<-edx}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{year=}\KeywordTok{format}\NormalTok{(date,}\StringTok{"%Y"}\NormalTok{))}
+\NormalTok{validation<-validation}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{date=}\KeywordTok{as.Date}\NormalTok{(}\KeywordTok{as.POSIXlt}\NormalTok{(timestamp,}\DataTypeTok{origin=}\StringTok{"1970-01-01"}\NormalTok{,}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{),}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{))}
+\NormalTok{validation<-validation}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{year=}\KeywordTok{format}\NormalTok{(date,}\StringTok{"%Y"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+We can also observe that the \texttt{title} column of both sets includes
+both the movie title and the release year. In order to monitor rating
+differences between older and newly-released movies, as well as
+evolutions in genre over time in line with cultural changes, we can
+create a new column to separate the release year from the title using
+the \texttt{stringr} package. We will name this \texttt{release\_year}.
+
+The \texttt{str\_sub} function enables us to extract a substring (in
+this case, the release year from the title column), with defined limits
+(i.e. ``-5'' and ``-2'' are chosen to prevent the inclusion of the
+brackets and punctuation on either side of the release year in the
+\texttt{title} column).
+
+\hypertarget{to-add-a-column-for-release_year}{%
+\subsubsection{\texorpdfstring{To add a column for
+\texttt{release\_year}:}{To add a column for release\_year:}}\label{to-add-a-column-for-release_year}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx<-edx}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{release_year=}\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{str_sub}\NormalTok{(title,}\OperatorTok{-}\DecValTok{5}\NormalTok{,}\OperatorTok{-}\DecValTok{2}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+In order to build an accurate recommendation system, it is important to
+account for users' preferences for different genres. Upon contemplation
+of the \texttt{edx} and \texttt{validation} sets, the genre column
+includes all of the genres that the movie could be categorised into. To
+separate the rows by individual genres, we can split the dataset. We
+then add the columns \texttt{date}, \texttt{year}, and
+\texttt{release\_year} to this new dataset.
+
+\hypertarget{split-dataset-by-genre}{%
+\subsubsection{Split dataset by genre}\label{split-dataset-by-genre}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx_genre<-edx}\OperatorTok{%>%}\KeywordTok{separate_rows}\NormalTok{(genres,}\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{|"}\NormalTok{)}
+\NormalTok{edx_genre<-edx_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{date=}\KeywordTok{as.Date}\NormalTok{(}\KeywordTok{as.POSIXlt}\NormalTok{(timestamp,}\DataTypeTok{origin=}\StringTok{"1970-01-01"}\NormalTok{,}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{),}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{))}
+\NormalTok{edx_genre<-edx_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{year=}\KeywordTok{format}\NormalTok{(date,}\StringTok{"%Y"}\NormalTok{))}
+\NormalTok{edx_genre<-edx_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{release_year=}\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{str_sub}\NormalTok{(title,}\OperatorTok{-}\DecValTok{5}\NormalTok{,}\OperatorTok{-}\DecValTok{2}\NormalTok{)))}
+\NormalTok{validation_genre<-validation}\OperatorTok{%>%}\KeywordTok{separate_rows}\NormalTok{(genres,}\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{|"}\NormalTok{)}
+\NormalTok{validation_genre<-validation_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{date=}\KeywordTok{as.Date}\NormalTok{(}\KeywordTok{as.POSIXlt}\NormalTok{(timestamp,}\DataTypeTok{origin=}\StringTok{"1970-01-01"}\NormalTok{,}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{),}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{))}
+\NormalTok{validation_genre<-validation_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{year=}\KeywordTok{format}\NormalTok{(date,}\StringTok{"%Y"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+The \texttt{edx\_genre} set has 23371423 observations whilst the
+\texttt{validation\_genre} set contains 2595771 observations.
+
+To compute the genres with the most ratings, we can use the following
+code:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ratings_genre <-}\StringTok{ }\NormalTok{edx_genre}\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(genres) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{count =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\KeywordTok{desc}\NormalTok{(count))}
+\NormalTok{ratings_genre}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 20 x 2
+##    genres               count
+##    <chr>                <int>
+##  1 Drama              3910127
+##  2 Comedy             3540930
+##  3 Action             2560545
+##  4 Thriller           2325899
+##  5 Adventure          1908892
+##  6 Romance            1712100
+##  7 Sci-Fi             1341183
+##  8 Crime              1327715
+##  9 Fantasy             925637
+## 10 Children            737994
+## 11 Horror              691485
+## 12 Mystery             568332
+## 13 War                 511147
+## 14 Animation           467168
+## 15 Musical             433080
+## 16 Western             189394
+## 17 Film-Noir           118541
+## 18 Documentary          93066
+## 19 IMAX                  8181
+## 20 (no genres listed)       7
+\end{verbatim}
+
+\hypertarget{data-visualisation-1}{%
+\subsection{2.2 Data Visualisation}\label{data-visualisation-1}}
+
+To gain a visual insight into the dataset's trends and patterns, we will
+use a range of data visualisation techniques.
+
+\hypertarget{rating-distributions}{%
+\subsubsection{Rating distributions}\label{rating-distributions}}
+
+The first step in our analysis is to determine the rating distribution,
+that is, the most common ratings awarded to movies, as demonstrated in
+the histogram below.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{scipen=}\DecValTok{999}\NormalTok{)}
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(rating))}\OperatorTok{+}\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{bins=}\DecValTok{10}\NormalTok{,}\DataTypeTok{fill=}\StringTok{"grey"}\NormalTok{,}\DataTypeTok{color=}\StringTok{"black"}\NormalTok{)}\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Movie Count per Rating"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Rating"}\NormalTok{) }\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Count"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/rating_dist-1.pdf}
+
+A main observation from studying this plot is that full-star ratings
+appear to be more common than half-star ratings. We use the
+\texttt{scipen} option to display the numerical units in fixed format.
+
+\hypertarget{ratings-awarded-each-year}{%
+\subsubsection{Ratings awarded each
+year}\label{ratings-awarded-each-year}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(year))}\OperatorTok{+}\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(year,rating))}\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Range of Ratings Awarded by Year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Year"}\NormalTok{) }\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Rating"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/ratings_year-1.pdf}
+
+The above plot is informative as it demonstrates that half-star ratings
+were only awarded from 2003 onwards; this may explain the higher number
+of full-star relative to half-star ratings.
+
+\hypertarget{number-of-users-who-submitted-ratings-for-one-or-more-movies-per-year}{%
+\subsubsection{Number of users who submitted ratings for one or more
+movies per
+year}\label{number-of-users-who-submitted-ratings-for-one-or-more-movies-per-year}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{scipen=}\DecValTok{999}\NormalTok{)}
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{group_by}\NormalTok{(year)}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(year, }\KeywordTok{n_distinct}\NormalTok{(userId)))}\OperatorTok{+}\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat=}\StringTok{"identity"}\NormalTok{)}\OperatorTok{+}\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Number of users who submitted ratings per year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"User Count"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/users_ratings-1.pdf}
+
+We can see that there is some variation in the number of active users
+per year.
+
+\hypertarget{number-of-different-movies-rated-per-year}{%
+\subsubsection{Number of different movies rated per
+year}\label{number-of-different-movies-rated-per-year}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{scipen=}\DecValTok{999}\NormalTok{)}
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{group_by}\NormalTok{(year)}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(year, }\KeywordTok{n_distinct}\NormalTok{(movieId)))}\OperatorTok{+}\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat=}\StringTok{"identity"}\NormalTok{)}\OperatorTok{+}\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Number of movies rated per year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Movie Count"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/movies_ratings-1.pdf}
+
+There is similar variation in the number of distinct movies rated each
+year. Note that years 1995 and 2009 were not full years, explaining the
+disparities seen in the figure.
+
+\hypertarget{smooth-plot-of-mean-rating-based-on-release-year}{%
+\subsubsection{Smooth plot of mean rating based on release
+year}\label{smooth-plot-of-mean-rating-based-on-release-year}}
+
+We can create a plot of mean rating over release year (with 95\%
+confidence intervals) to determine whether older or more recent movies
+tend to be rated more favourably.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(release_year)}\OperatorTok{%>%}\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{rating=}\KeywordTok{mean}\NormalTok{(rating)) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(release_year,rating))}\OperatorTok{+}\KeywordTok{geom_point}\NormalTok{()}\OperatorTok{+}\KeywordTok{geom_smooth}\NormalTok{()}\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Mean Rating per Release Year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Release Year"}\NormalTok{) }\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Mean Rating"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+\end{verbatim}
+
+\includegraphics{Movielens-github_files/figure-latex/mean_release-1.pdf}
+
+Interestingly, users tend to rate modern movies lower than movies
+released in the 20th century.
+
+\hypertarget{genres-per-release-year}{%
+\subsubsection{Genres per release year}\label{genres-per-release-year}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{scipen=}\DecValTok{999}\NormalTok{)}
+\NormalTok{edx_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{genres=}\KeywordTok{as.factor}\NormalTok{(genres))}\OperatorTok{%>%}\KeywordTok{group_by}\NormalTok{(release_year,genres)}\OperatorTok{%>%}\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{n=}\KeywordTok{n}\NormalTok{())}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(release_year,n))}\OperatorTok{+}\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{genres))}\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Movies by Genre based on Release Year"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Release Year"}\NormalTok{) }\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Count"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/genres_release-1.pdf}
+
+The figure above provides an insight into how genres have evolved in
+line with cultural and social changes.
+
+\hypertarget{mean-se-rating-per-genre}{%
+\subsubsection{Mean ± SE rating per
+genre}\label{mean-se-rating-per-genre}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx_genre}\OperatorTok{%>%}\KeywordTok{group_by}\NormalTok{(genres)}\OperatorTok{%>%}\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{n=}\KeywordTok{n}\NormalTok{(),}\DataTypeTok{avg=}\KeywordTok{mean}\NormalTok{(rating),}\DataTypeTok{se=}\KeywordTok{sd}\NormalTok{(rating}\OperatorTok{/}\KeywordTok{sqrt}\NormalTok{(}\KeywordTok{n}\NormalTok{())))}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{genres=}\KeywordTok{reorder}\NormalTok{(genres,avg))}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(genres,avg,}\DataTypeTok{ymax=}\NormalTok{avg}\OperatorTok{+}\NormalTok{se,}\DataTypeTok{ymin=}\NormalTok{avg}\OperatorTok{-}\NormalTok{se))}\OperatorTok{+}\KeywordTok{geom_point}\NormalTok{()}\OperatorTok{+}\KeywordTok{geom_errorbar}\NormalTok{()}\OperatorTok{+}\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text.x=}\KeywordTok{element_text}\NormalTok{(}\DataTypeTok{angle=}\DecValTok{90}\NormalTok{,}\DataTypeTok{hjust=}\DecValTok{1}\NormalTok{))}\OperatorTok{+}\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Mean rating ± SE per Genre"}\NormalTok{)}\OperatorTok{+}\KeywordTok{xlab}\NormalTok{(}\StringTok{"Genres"}\NormalTok{)}\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Mean Rating"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/mean_genre-1.pdf}
+
+After separating the rows to display individual genres, we can also
+observe that certain genres have a higher mean rating than others. Note
+that the ``no genres listed'' refers to the movie ``Pull My Daisy''
+released in 1958; this has a large standard error as only seven users
+rated the movie:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx_genre}\OperatorTok{%>%}\KeywordTok{filter}\NormalTok{(genres}\OperatorTok{==}\StringTok{"(no genres listed)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   userId movieId rating  timestamp                title             genres
+## 1   7701    8606    5.0 1190806786 Pull My Daisy (1958) (no genres listed)
+## 2  10680    8606    4.5 1171170472 Pull My Daisy (1958) (no genres listed)
+## 3  29097    8606    2.0 1089648625 Pull My Daisy (1958) (no genres listed)
+## 4  46142    8606    3.5 1226518191 Pull My Daisy (1958) (no genres listed)
+## 5  57696    8606    4.5 1230588636 Pull My Daisy (1958) (no genres listed)
+## 6  64411    8606    3.5 1096732843 Pull My Daisy (1958) (no genres listed)
+## 7  67385    8606    2.5 1188277325 Pull My Daisy (1958) (no genres listed)
+##         date year release_year
+## 1 2007-09-26 2007         1958
+## 2 2007-02-11 2007         1958
+## 3 2004-07-12 2004         1958
+## 4 2008-11-12 2008         1958
+## 5 2008-12-29 2008         1958
+## 6 2004-10-02 2004         1958
+## 7 2007-08-28 2007         1958
+\end{verbatim}
+
+\hypertarget{movieid-count}{%
+\subsubsection{MovieID Count}\label{movieid-count}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{count}\NormalTok{(movieId)}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(n))}\OperatorTok{+}\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{bins =} \DecValTok{30}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"grey"}\NormalTok{, }\DataTypeTok{color=}\StringTok{"black"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{scale_x_log10}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Ratings per MovieID"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{xlab}\NormalTok{(}\StringTok{"MovieID (log scale)"}\NormalTok{) }\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Count"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/movieid_count-1.pdf}
+
+The above plot demonstrates that some movies have been rated more than
+others, as would be expected. It also provides initial insight into why
+the movies themselves may be an important factor when forming our
+prediction model.
+
+\hypertarget{userid-count}{%
+\subsubsection{UserID Count}\label{userid-count}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{edx}\OperatorTok{%>%}\KeywordTok{count}\NormalTok{(userId)}\OperatorTok{%>%}\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(n))}\OperatorTok{+}\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{bins =} \DecValTok{30}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"grey"}\NormalTok{, }\DataTypeTok{color=}\StringTok{"black"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{scale_x_log10}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Ratings per UserID"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{xlab}\NormalTok{(}\StringTok{"UserID (log scale)"}\NormalTok{) }\OperatorTok{+}\KeywordTok{ylab}\NormalTok{(}\StringTok{"Count"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/userid_count-1.pdf}
+
+Similarly to the movie plot, we notice that there are sizeable contrasts
+in the number of ratings per user. Whereas some users rate movies very
+often, others may have only submitted their opinion for a fraction of
+the movies they watched.
+
+\hypertarget{predictive-model---methods-1}{%
+\subsection{2.3 Predictive Model -
+Methods}\label{predictive-model---methods-1}}
+
+We will test a variety of predictive models and compute the results to
+choose the one that provides the lowest RMSE. The approach will be
+inspired by some of the methods used in the ``Netflix Challenge''. We
+will start with the simplest model, consisting of the average of all
+ratings (thus not taking into account movie or user effects). The second
+method will involve modeling movie effects, whilst the third will model
+movie and user effects. Finally, three regularization approaches will be
+tested using cross-validation to choose the penalty terms. The models
+with the lowest RMSE will be re-run with the \texttt{edx} and
+\texttt{validation} sets.
+
+\hypertarget{the-function-that-computes-the-rmse}{%
+\subsubsection{The function that computes the
+RMSE:}\label{the-function-that-computes-the-rmse}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{RMSE <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(true_ratings, predicted_ratings)\{ }\KeywordTok{sqrt}\NormalTok{(}\KeywordTok{mean}\NormalTok{((true_ratings }\OperatorTok{-}\StringTok{ }\NormalTok{predicted_ratings)}\OperatorTok{^}\DecValTok{2}\NormalTok{))\}}
+\end{Highlighting}
+\end{Shaded}
+
+The above function will compute the RMSE for ratings vectors and their
+predictors.
+
+\hypertarget{results-and-discussion-1}{%
+\section{3. Results and Discussion}\label{results-and-discussion-1}}
+
+\hypertarget{partitioning-the-edx-dataset-into-train-and-test-sets-1}{%
+\subsection{\texorpdfstring{3.1 Partitioning the \texttt{edx} dataset
+into train and test
+sets}{3.1 Partitioning the edx dataset into train and test sets}}\label{partitioning-the-edx-dataset-into-train-and-test-sets-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DataTypeTok{sample.kind=}\StringTok{"Rounding"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in set.seed(1, sample.kind = "Rounding"): non-uniform 'Rounding'
+## sampler used
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{test_index <-}\StringTok{ }\KeywordTok{createDataPartition}\NormalTok{(}\DataTypeTok{y =}\NormalTok{ edx}\OperatorTok{$}\NormalTok{rating, }\DataTypeTok{times =} \DecValTok{1}\NormalTok{, }\DataTypeTok{p =} \FloatTok{0.2}\NormalTok{, }\DataTypeTok{list =} \OtherTok{FALSE}\NormalTok{) }
+\NormalTok{train_set <-}\StringTok{ }\NormalTok{edx[}\OperatorTok{-}\NormalTok{test_index,] }\CommentTok{### Create train set}
+\NormalTok{temp <-}\StringTok{ }\NormalTok{edx[test_index,] }\CommentTok{### Create test set}
+
+\CommentTok{### Make sure `userId` and `movieId` in the `test_set` set are also in the `train_set`}
+\NormalTok{test_set <-}\StringTok{ }\NormalTok{temp }\OperatorTok{%>%}\StringTok{ }\KeywordTok{semi_join}\NormalTok{(train_set,}\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{semi_join}\NormalTok{(train_set,}\DataTypeTok{by=}\StringTok{"userId"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Separating the \texttt{edx} dataset into a \texttt{train\_set} and a
+\texttt{test\_set} is essential for training, tuning, and regularization
+processes, unless full cross-validation is used.
+
+\hypertarget{model-1---naive-bayes-1}{%
+\subsection{3.2 Model 1 - Naive Bayes}\label{model-1---naive-bayes-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mu_hat <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(train_set}\OperatorTok{$}\NormalTok{rating) }
+\NormalTok{mu_hat}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 3.512482
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naive_rmse <-}\StringTok{ }\KeywordTok{RMSE}\NormalTok{(test_set}\OperatorTok{$}\NormalTok{rating, mu_hat) }
+\NormalTok{naive_rmse}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1.059904
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method =} \StringTok{"Just the average"}\NormalTok{, }\DataTypeTok{RMSE =}\NormalTok{ naive_rmse)}
+\NormalTok{rmse_results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 2
+##   method            RMSE
+##   <chr>            <dbl>
+## 1 Just the average  1.06
+\end{verbatim}
+
+The above model assumes the same ratings, regardless of the movie, user,
+or genre. Our RMSE is approximately 1.06, we can do better!
+
+\hypertarget{model-2---movie-effect-1}{%
+\subsection{3.3 Model 2 - Movie Effect}\label{model-2---movie-effect-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(caret)}
+\KeywordTok{library}\NormalTok{(dslabs)}
+\KeywordTok{library}\NormalTok{(tidyverse)}
+\KeywordTok{library}\NormalTok{(stringr)}
+\NormalTok{mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(train_set}\OperatorTok{$}\NormalTok{rating) }
+\NormalTok{movie_avgs <-}\StringTok{ }\NormalTok{train_set }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_i =} \KeywordTok{mean}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu))}
+\NormalTok{movie_avgs }\OperatorTok{%>%}\StringTok{ }\KeywordTok{qplot}\NormalTok{(b_i, }\DataTypeTok{geom =}\StringTok{"histogram"}\NormalTok{, }\DataTypeTok{bins =} \DecValTok{10}\NormalTok{, }\DataTypeTok{data =}\NormalTok{ ., }\DataTypeTok{color =} \KeywordTok{I}\NormalTok{(}\StringTok{"black"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{predicted_ratings <-}\StringTok{ }\NormalTok{mu }\OperatorTok{+}\StringTok{ }\NormalTok{test_set }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(movie_avgs, }\DataTypeTok{by=}\StringTok{'movieId'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(b_i)}
+\NormalTok{model_}\DecValTok{1}\NormalTok{_rmse <-}\StringTok{ }\KeywordTok{RMSE}\NormalTok{(predicted_ratings, test_set}\OperatorTok{$}\NormalTok{rating) }
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Movie Effect Model"}\NormalTok{, }\DataTypeTok{RMSE =}\NormalTok{ model_}\DecValTok{1}\NormalTok{_rmse))}
+\NormalTok{rmse_results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 2 x 2
+##   method              RMSE
+##   <chr>              <dbl>
+## 1 Just the average   1.06 
+## 2 Movie Effect Model 0.944
+\end{verbatim}
+
+We saw previously that movies are rated differently. To account for this
+observation, we can adapt our least squares estimate by grouping the
+datasets by the \texttt{movieId}. There is an improvement in the RMSE to
+approximately 0.94.
+
+\hypertarget{model-3---movie-and-user-effect-1}{%
+\subsection{3.4 Model 3 - Movie and User
+Effect}\label{model-3---movie-and-user-effect-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{train_set }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(userId) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_u =} \KeywordTok{mean}\NormalTok{(rating)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{>=}\DecValTok{100}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(b_u)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{bins =} \DecValTok{30}\NormalTok{, }\DataTypeTok{color =} \StringTok{"black"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-3-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{user_avgs <-}\StringTok{ }\NormalTok{train_set }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(movie_avgs, }\DataTypeTok{by=}\StringTok{'movieId'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(userId) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_u =} \KeywordTok{mean}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu }\OperatorTok{-}\StringTok{ }\NormalTok{b_i))}
+\NormalTok{predicted_ratings <-}\StringTok{ }\NormalTok{test_set }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(movie_avgs, }\DataTypeTok{by=}\StringTok{'movieId'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(user_avgs, }\DataTypeTok{by=}\StringTok{'userId'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i }\OperatorTok{+}\StringTok{ }\NormalTok{b_u) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(pred)}
+\NormalTok{model_}\DecValTok{2}\NormalTok{_rmse <-}\StringTok{ }\KeywordTok{RMSE}\NormalTok{(predicted_ratings, test_set}\OperatorTok{$}\NormalTok{rating) }
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results, }\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Movie + User Effects Model"}\NormalTok{, }\DataTypeTok{RMSE =}\NormalTok{ model_}\DecValTok{2}\NormalTok{_rmse))}
+\NormalTok{rmse_results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 3 x 2
+##   method                      RMSE
+##   <chr>                      <dbl>
+## 1 Just the average           1.06 
+## 2 Movie Effect Model         0.944
+## 3 Movie + User Effects Model 0.866
+\end{verbatim}
+
+We can now repeat the process, whilst also accounting for the fact that
+our dataset is not based on a single user. Our RMSE improves again to
+about 0.87.
+
+\hypertarget{model-4---regularization-movie-effect-1}{%
+\subsection{3.5 Model 4 - Regularization Movie
+Effect}\label{model-4---regularization-movie-effect-1}}
+
+The next step is to use a process known as regularization. This uses
+penalized regression to control the variability of the effect sizes. To
+choose the penalty terms using the tuning parameter (lambda), we make
+use of cross-validation.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{10}\NormalTok{, }\FloatTok{0.25}\NormalTok{)}
+\NormalTok{mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(train_set}\OperatorTok{$}\NormalTok{rating) }
+\NormalTok{just_the_sum <-}\StringTok{ }\NormalTok{train_set }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{s =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu), }\DataTypeTok{n_i =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{rmses <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(lambdas, }\ControlFlowTok{function}\NormalTok{(l)\{ }
+\NormalTok{  predicted_ratings <-}\StringTok{ }\NormalTok{test_set }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(just_the_sum, }\DataTypeTok{by=}\StringTok{'movieId'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{b_i =}\NormalTok{ s}\OperatorTok{/}\NormalTok{(n_i}\OperatorTok{+}\NormalTok{l)) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{pull}\NormalTok{(pred)}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{RMSE}\NormalTok{(predicted_ratings, test_set}\OperatorTok{$}\NormalTok{rating)) }
+\NormalTok{\})}
+\KeywordTok{qplot}\NormalTok{(lambdas, rmses) }
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas[}\KeywordTok{which.min}\NormalTok{(rmses)]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2.5
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Regularized Movie Effect Model"}\NormalTok{,}\DataTypeTok{RMSE =} \KeywordTok{min}\NormalTok{(rmses)))}
+\NormalTok{rmse_results }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule
+method & RMSE\tabularnewline
+\midrule
+\endhead
+Just the average & 1.0599043\tabularnewline
+Movie Effect Model & 0.9437429\tabularnewline
+Movie + User Effects Model & 0.8659320\tabularnewline
+Regularized Movie Effect Model & 0.9436745\tabularnewline
+\bottomrule
+\end{longtable}
+
+For this model, the labmda that minimises the RMSE is 2.5, giving a
+final RMSE of approximately 0.94.
+
+\hypertarget{model-5---regularization-movie-and-user-effect-1}{%
+\subsection{3.6 Model 5 - Regularization Movie and User
+Effect}\label{model-5---regularization-movie-and-user-effect-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{10}\NormalTok{, }\FloatTok{0.25}\NormalTok{)}
+\NormalTok{rmses <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(lambdas, }\ControlFlowTok{function}\NormalTok{(l)\{}
+\NormalTok{  mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(train_set}\OperatorTok{$}\NormalTok{rating)}
+\NormalTok{  b_i <-}\StringTok{ }\NormalTok{train_set }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_i =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  b_u <-}\StringTok{ }\NormalTok{train_set }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(userId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_u =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  predicted_ratings <-}
+\StringTok{    }\NormalTok{test_set }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by =} \StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by =} \StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i }\OperatorTok{+}\StringTok{ }\NormalTok{b_u) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(pred)}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{RMSE}\NormalTok{(predicted_ratings, test_set}\OperatorTok{$}\NormalTok{rating))}
+\NormalTok{\})}
+\KeywordTok{qplot}\NormalTok{(lambdas, rmses)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambda <-}\StringTok{ }\NormalTok{lambdas[}\KeywordTok{which.min}\NormalTok{(rmses)] }
+\NormalTok{lambda}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 4.75
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Regularized Movie + User Effect Model"}\NormalTok{,}\DataTypeTok{RMSE =} \KeywordTok{min}\NormalTok{(rmses)))}
+\NormalTok{rmse_results }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule
+method & RMSE\tabularnewline
+\midrule
+\endhead
+Just the average & 1.0599043\tabularnewline
+Movie Effect Model & 0.9437429\tabularnewline
+Movie + User Effects Model & 0.8659320\tabularnewline
+Regularized Movie Effect Model & 0.9436745\tabularnewline
+Regularized Movie + User Effect Model & 0.8652421\tabularnewline
+\bottomrule
+\end{longtable}
+
+As in Model 3, we want to account for the movie effect AND the user
+effect. To do this, we can re-use regularization by including both of
+these parameters in the model. The lambda that minimises the RMSE is
+4.75. Our total RMSE has been reduced to 0.87.
+
+\hypertarget{model-6---regularization-movie-user-and-genre-effect-1}{%
+\subsection{3.7 Model 6 - Regularization Movie, User, and Genre
+Effect}\label{model-6---regularization-movie-user-and-genre-effect-1}}
+
+So far, we have looked at the effect of movies and users on the RMSE.
+Earlier, we noted that ratings also vary considerably with genre. To add
+this element into the prediction model, we must first split the train
+and test sets by genre (as previously performed on the \texttt{edx} and
+\texttt{validation} sets). Note this process could take a long time.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{train_genre<-train_set}\OperatorTok{%>%}\KeywordTok{separate_rows}\NormalTok{(genres,}\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{|"}\NormalTok{)}
+\NormalTok{train_genre<-train_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{date=}\KeywordTok{as.Date}\NormalTok{(}\KeywordTok{as.POSIXlt}\NormalTok{(timestamp,}\DataTypeTok{origin=}\StringTok{"1970-01-01"}\NormalTok{,}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{),}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{))}
+\NormalTok{train_genre<-train_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{year=}\KeywordTok{format}\NormalTok{(date,}\StringTok{"%Y"}\NormalTok{))}
+\NormalTok{train_genre<-train_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{release_year=}\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{str_sub}\NormalTok{(title,}\OperatorTok{-}\DecValTok{5}\NormalTok{,}\OperatorTok{-}\DecValTok{2}\NormalTok{)))}
+\NormalTok{test_genre<-test_set}\OperatorTok{%>%}\KeywordTok{separate_rows}\NormalTok{(genres,}\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{|"}\NormalTok{)}
+\NormalTok{test_genre<-test_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{date=}\KeywordTok{as.Date}\NormalTok{(}\KeywordTok{as.POSIXlt}\NormalTok{(timestamp,}\DataTypeTok{origin=}\StringTok{"1970-01-01"}\NormalTok{,}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{),}\DataTypeTok{format=}\StringTok{"%Y-%m-%d"}\NormalTok{))}
+\NormalTok{test_genre<-test_genre}\OperatorTok{%>%}\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{year=}\KeywordTok{format}\NormalTok{(date,}\StringTok{"%Y"}\NormalTok{))}
+\NormalTok{lambdas <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{20}\NormalTok{, }\DecValTok{1}\NormalTok{)}
+\NormalTok{rmses <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(lambdas, }\ControlFlowTok{function}\NormalTok{(l)\{}
+\NormalTok{  mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(train_set}\OperatorTok{$}\NormalTok{rating)}
+\NormalTok{  b_i <-}\StringTok{ }\NormalTok{train_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_i =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  b_u <-}\StringTok{ }\NormalTok{train_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(userId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_u =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  b_y <-}\StringTok{ }\NormalTok{train_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by=}\StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(year) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_y =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_u }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l), }\DataTypeTok{n_y =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{  b_g <-}\StringTok{ }\NormalTok{train_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by=}\StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_y, }\DataTypeTok{by =} \StringTok{"year"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(genres) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_g =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_y }\OperatorTok{-}\StringTok{ }\NormalTok{b_u }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l), }\DataTypeTok{n_g =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{  predicted_ratings <-}
+\StringTok{    }\NormalTok{test_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by =} \StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by =} \StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_y, }\DataTypeTok{by =} \StringTok{"year"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_g, }\DataTypeTok{by =} \StringTok{"genres"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i }\OperatorTok{+}\StringTok{ }\NormalTok{b_u }\OperatorTok{+}\StringTok{ }\NormalTok{b_y }\OperatorTok{+}\StringTok{ }\NormalTok{b_g) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(pred)}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{RMSE}\NormalTok{(predicted_ratings, test_genre}\OperatorTok{$}\NormalTok{rating))}
+\NormalTok{\})}
+\KeywordTok{qplot}\NormalTok{(lambdas, rmses)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambda <-}\StringTok{ }\NormalTok{lambdas[}\KeywordTok{which.min}\NormalTok{(rmses)] }
+\NormalTok{lambda}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 14
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Regularized Movie + User + Genres Effect Model"}\NormalTok{,}\DataTypeTok{RMSE =} \KeywordTok{min}\NormalTok{(rmses)))}
+\NormalTok{rmse_results }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule
+method & RMSE\tabularnewline
+\midrule
+\endhead
+Just the average & 1.0599043\tabularnewline
+Movie Effect Model & 0.9437429\tabularnewline
+Movie + User Effects Model & 0.8659320\tabularnewline
+Regularized Movie Effect Model & 0.9436745\tabularnewline
+Regularized Movie + User Effect Model & 0.8652421\tabularnewline
+Regularized Movie + User + Genres Effect Model &
+0.8636092\tabularnewline
+\bottomrule
+\end{longtable}
+
+The optimal lambda is 14; this results in a substantial improvement in
+our RMSE, down to 0.8636.
+
+\hypertarget{model-7---regularization-movie-effect-validation-1}{%
+\subsection{3.8 Model 7 - Regularization Movie Effect
+(Validation)}\label{model-7---regularization-movie-effect-validation-1}}
+
+We are now ready to substitute our train and test sets for the
+\texttt{edx} and \texttt{validation} sets.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{10}\NormalTok{, }\FloatTok{0.25}\NormalTok{)}
+\NormalTok{mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(edx}\OperatorTok{$}\NormalTok{rating) }
+\NormalTok{just_the_sum <-}\StringTok{ }\NormalTok{edx }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{s =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu), }\DataTypeTok{n_i =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{rmses <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(lambdas, }\ControlFlowTok{function}\NormalTok{(l)\{ }
+\NormalTok{  predicted_ratings <-}\StringTok{ }\NormalTok{validation }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(just_the_sum, }\DataTypeTok{by=}\StringTok{'movieId'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{b_i =}\NormalTok{ s}\OperatorTok{/}\NormalTok{(n_i}\OperatorTok{+}\NormalTok{l)) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{pull}\NormalTok{(pred)}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{RMSE}\NormalTok{(predicted_ratings, validation}\OperatorTok{$}\NormalTok{rating)) }
+\NormalTok{\})}
+\KeywordTok{qplot}\NormalTok{(lambdas, rmses) }
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas[}\KeywordTok{which.min}\NormalTok{(rmses)]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2.5
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Regularized Movie Effect Model"}\NormalTok{,}\DataTypeTok{RMSE =} \KeywordTok{min}\NormalTok{(rmses)))}
+\NormalTok{rmse_results }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule
+method & RMSE\tabularnewline
+\midrule
+\endhead
+Just the average & 1.0599043\tabularnewline
+Movie Effect Model & 0.9437429\tabularnewline
+Movie + User Effects Model & 0.8659320\tabularnewline
+Regularized Movie Effect Model & 0.9436745\tabularnewline
+Regularized Movie + User Effect Model & 0.8652421\tabularnewline
+Regularized Movie + User + Genres Effect Model &
+0.8636092\tabularnewline
+Regularized Movie Effect Model & 0.9438521\tabularnewline
+\bottomrule
+\end{longtable}
+
+We start by looking at movie effects, it looks like a lambda value of
+2.5 gives us the lowest RMSE: about 0.94.
+
+\hypertarget{model-8---regularization-movie-and-user-effect-validation-1}{%
+\subsection{3.9 Model 8 - Regularization Movie and User Effect
+(Validation)}\label{model-8---regularization-movie-and-user-effect-validation-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{10}\NormalTok{, }\FloatTok{0.25}\NormalTok{)}
+\NormalTok{rmses <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(lambdas, }\ControlFlowTok{function}\NormalTok{(l)\{}
+\NormalTok{  mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(edx}\OperatorTok{$}\NormalTok{rating)}
+\NormalTok{  b_i <-}\StringTok{ }\NormalTok{edx }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_i =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  b_u <-}\StringTok{ }\NormalTok{edx }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(userId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_u =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  predicted_ratings <-}
+\StringTok{    }\NormalTok{validation }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by =} \StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by =} \StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i }\OperatorTok{+}\StringTok{ }\NormalTok{b_u) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(pred)}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{RMSE}\NormalTok{(predicted_ratings, validation}\OperatorTok{$}\NormalTok{rating))}
+\NormalTok{\})}
+\KeywordTok{qplot}\NormalTok{(lambdas, rmses)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambda <-}\StringTok{ }\NormalTok{lambdas[}\KeywordTok{which.min}\NormalTok{(rmses)] }
+\NormalTok{lambda}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 5.25
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Regularized Movie + User Effect Model"}\NormalTok{,}\DataTypeTok{RMSE =} \KeywordTok{min}\NormalTok{(rmses)))}
+\NormalTok{rmse_results }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule
+method & RMSE\tabularnewline
+\midrule
+\endhead
+Just the average & 1.0599043\tabularnewline
+Movie Effect Model & 0.9437429\tabularnewline
+Movie + User Effects Model & 0.8659320\tabularnewline
+Regularized Movie Effect Model & 0.9436745\tabularnewline
+Regularized Movie + User Effect Model & 0.8652421\tabularnewline
+Regularized Movie + User + Genres Effect Model &
+0.8636092\tabularnewline
+Regularized Movie Effect Model & 0.9438521\tabularnewline
+Regularized Movie + User Effect Model & 0.8648170\tabularnewline
+\bottomrule
+\end{longtable}
+
+The above model makes use of movie and user effects. The lambda that
+minimises the RMSE is 5.25, giving an RMSE value of 0.8648.
+
+\hypertarget{model-9---regularization-movie-user-and-genre-effect-validation-1}{%
+\subsection{3.10 Model 9 - Regularization Movie, User, and Genre Effect
+(Validation)}\label{model-9---regularization-movie-user-and-genre-effect-validation-1}}
+
+The model that returned the lowest RMSE using the train and test sets
+included movie, user, and genre effects. Hence, we will re-run this
+model below with the \texttt{validation} set. Please note this process
+may take some time.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambdas <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{20}\NormalTok{, }\DecValTok{1}\NormalTok{)}
+\NormalTok{rmses <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(lambdas, }\ControlFlowTok{function}\NormalTok{(l)\{}
+\NormalTok{  mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(edx}\OperatorTok{$}\NormalTok{rating)}
+\NormalTok{  b_i <-}\StringTok{ }\NormalTok{edx_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(movieId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_i =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  b_u <-}\StringTok{ }\NormalTok{edx_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(userId) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_u =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l))}
+\NormalTok{  b_y <-}\StringTok{ }\NormalTok{edx_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by=}\StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(year) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_y =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_u }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l), }\DataTypeTok{n_y =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{  b_g <-}\StringTok{ }\NormalTok{edx_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by=}\StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by=}\StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_y, }\DataTypeTok{by =} \StringTok{"year"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(genres) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{b_g =} \KeywordTok{sum}\NormalTok{(rating }\OperatorTok{-}\StringTok{ }\NormalTok{b_y }\OperatorTok{-}\StringTok{ }\NormalTok{b_u }\OperatorTok{-}\StringTok{ }\NormalTok{b_i }\OperatorTok{-}\StringTok{ }\NormalTok{mu)}\OperatorTok{/}\NormalTok{(}\KeywordTok{n}\NormalTok{()}\OperatorTok{+}\NormalTok{l), }\DataTypeTok{n_g =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{  predicted_ratings <-}
+\StringTok{    }\NormalTok{validation_genre }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(b_i, }\DataTypeTok{by =} \StringTok{"movieId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_u, }\DataTypeTok{by =} \StringTok{"userId"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_y, }\DataTypeTok{by =} \StringTok{"year"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(b_g, }\DataTypeTok{by =} \StringTok{"genres"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pred =}\NormalTok{ mu }\OperatorTok{+}\StringTok{ }\NormalTok{b_i }\OperatorTok{+}\StringTok{ }\NormalTok{b_u }\OperatorTok{+}\StringTok{ }\NormalTok{b_y }\OperatorTok{+}\StringTok{ }\NormalTok{b_g) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(pred)}
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{RMSE}\NormalTok{(predicted_ratings, validation_genre}\OperatorTok{$}\NormalTok{rating))}
+\NormalTok{\})}
+\KeywordTok{qplot}\NormalTok{(lambdas, rmses)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Movielens-github_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambda <-}\StringTok{ }\NormalTok{lambdas[}\KeywordTok{which.min}\NormalTok{(rmses)] }
+\NormalTok{lambda}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 15
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rmse_results <-}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(rmse_results,}\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{method=}\StringTok{"Regularized Movie + User + Genres Effect Model"}\NormalTok{,}\DataTypeTok{RMSE =} \KeywordTok{min}\NormalTok{(rmses)))}
+\NormalTok{rmse_results }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule
+method & RMSE\tabularnewline
+\midrule
+\endhead
+Just the average & 1.0599043\tabularnewline
+Movie Effect Model & 0.9437429\tabularnewline
+Movie + User Effects Model & 0.8659320\tabularnewline
+Regularized Movie Effect Model & 0.9436745\tabularnewline
+Regularized Movie + User Effect Model & 0.8652421\tabularnewline
+Regularized Movie + User + Genres Effect Model &
+0.8636092\tabularnewline
+Regularized Movie Effect Model & 0.9438521\tabularnewline
+Regularized Movie + User Effect Model & 0.8648170\tabularnewline
+Regularized Movie + User + Genres Effect Model &
+0.8626438\tabularnewline
+\bottomrule
+\end{longtable}
+
+This final model has a lambda value of 15 and lowers our RMSE all the
+way to 0.8626!
+
+\hypertarget{conclusion-1}{%
+\section{4. Conclusion}\label{conclusion-1}}
+
+\hypertarget{summary-1}{%
+\subsection{4.1 Summary}\label{summary-1}}
+
+Throughout this investigation, we have trialled a number of models to
+create a recommendation system that can accurately suggest movies for
+different users, whilst accounting for their rating history and
+preferences. It was also important to consider factors such as genre and
+use data visualisation techniques to map ratings over time so as to
+reflect social and cultural changes which may impact users' viewing
+choices. The regularization approach provided the most accurate results,
+when accounting for movie ID, user ID, and genre, as seen in the
+resulting RMSE.
+
+\hypertarget{limitations-and-future-work-1}{%
+\subsection{4.2 Limitations and future
+work}\label{limitations-and-future-work-1}}
+
+We could improve our work by trialling new models, for instance using
+matrix factorization and experimenting with advanced packages. Although
+there were some constraints on the models that could be used as a result
+of technical capacity, there remains scope to delve into other machine
+learning techniques, for instance k-nearest neighbors.
+
+
+\end{document}
