@@ -2,38 +2,36 @@
 title: "Report on Movielens Rating Predictions"
 author: "Olivia Malkowski"
 date: "10/18/2019"
-output: pdf_document
+geometry: margin=2cm
+output: 
+  pdf_document: 
+    toc: true
+    toc_depth: 2
 ---
 
 ```{r setup,include=FALSE}
 knitr::opts_chunk$set(echo=TRUE)
 ```
 
-# Contents
+```{r}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
 
-#### 1. Introduction
-##### 1.1 Overview/Executive Summary
-##### 1.2 Loading the Data
-##### 1.3 Libraries and Tidy Data
-##### 1.4 Data Summary
-#### 2. Methods and Analysis
-##### 2.1 Data Cleaning and Exploration
-##### 2.2 Data Visualisation
-##### 2.3 Predictive Model - Methods
-#### 3. Results and Discussion
-##### 3.1 Partitioning the edx dataset into train and test sets
-##### 3.2 Model 1 - Naive Bayes
-##### 3.3 Model 2 - Movie Effect
-##### 3.4 Model 3 - Movie and User Effect
-##### 3.5 Model 4 - Regularization Movie Effect
-##### 3.6 Model 5 - Regularization Movie and User Effect
-##### 3.7 Model 6 - Regularization Movie, User, and Genre Effect
-##### 3.8 Model 7 - Regularization Movie Effect (Validation)
-##### 3.9 Model 8 - Regularization Movie and User Effect (Validation)
-##### 3.10 Model 9 - Regularization Movie, User, and Genre Effect (Validation)
-#### 4. Conclusion
-##### 4.1 Summary
-##### 4.2 Limitations and Future Work
+```{r wrap-hook}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+```
 
 # 1. Introduction
 
