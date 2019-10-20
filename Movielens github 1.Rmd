@@ -4,7 +4,7 @@ author: "Olivia Malkowski"
 date: "10/18/2019"
 geometry: margin=2cm
 output: 
-  html_document: 
+  github_document: 
     toc: true
     toc_depth: 2
 ---
