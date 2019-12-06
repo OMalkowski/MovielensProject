@@ -1,4 +1,50 @@
-# Installing packages
+---
+title: "Classifying Orthopaedic Patients based on Biomechanical Features"
+author: "Olivia Malkowski"
+date: "06/12/2019"
+geometry: margin=2cm
+output: 
+  pdf_document:
+    toc: true 
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+```{r echo=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+```
+
+# 1. Introduction - Part 1
+
+## 1.1 Overview/Executive Summary
+
+This dataset, available via Kaggle, includes data on six biomechanical features of orthopaedic patients (i.e. pelvic incidence, pelvic tilt, lumbar lordosis angle, sacral slope, pelvic radius, and degree of spondylolisthesis). The objective of Part 1 of this project is to use these features to classify patients into one of three groups (i.e. 100 Normal, 60 Disk Hernia, and 150 Spondylolisthesis patients). In order to fulfil this task, a number of steps were performed. Notably, once the data were cleaned, data visualisation was used to gain an insight into the predictors of each of the three conditions/classes. Following this, methods including recursive partitioning, k-nearest neighbours, random forests, and multiclass support vector machine were implemented to improve the accuracy of the classifications.
+
+## 1.2 Loading the Data
+
+### Note: this process could take a couple of minutes
+
+```{r data_sets, echo=FALSE, include=FALSE, message=FALSE}
+### Installing packages
 r = getOption("repos")
 r["CRAN"] = "http://cran.us.r-project.org"
 options(repos = r)
@@ -13,7 +59,7 @@ install.packages("rpart", repos = "http://cran.us.r-project.org")
 install.packages("randomForest", repos = "http://cran.us.r-project.org")
 install.packages("dplyr")
 
-# Loading libraries
+### Loading libraries
 library(tidyverse)
 library(lubridate)
 library(stringr)
@@ -24,64 +70,116 @@ install.packages("rpart")
 library(rpart)
 install.packages("readr")
 library(readr)
+```
 
-# Download file part 1
-# https://www.kaggle.com/uciml/biomechanical-features-of-orthopedic-patients/data
+```{r}
+### Download file part 1
+### https://www.kaggle.com/uciml/biomechanical-features-of-orthopedic-patients/data
 filename <- "column_3C_weka.csv"
 library(readr)
 dat3C<-read_csv(filename)
+```
 
-# Summarise dataset
+## 1.3 Tidy data and Summary
+
+Before processing the data, it is important to familiarise ourselves with the `dat3C` dataset. This contains 310 observations of 7 variables.
+
+```{r}
+### Summarising the data
 table(dat3C$class)
 summary(dat3C)
 
-# Head dataset
+### We can look at the first six lines of the `dat3C` with the `head` function:
 head(dat3C)
 
-# Tidy data
+### We can check that the data is in tidy format with the `as_tibble` function:
 dat3C%>%as_tibble
 
-# Check missing data
+### We then check that there is no missing data:
 any(is.na(dat3C))
 sum(is.na(dat3C))
+```
 
-# Transform dataset into dataframe for classification purposes
+# 2. Methods and Analysis
+
+## 2.1 Data Cleaning and Exploration
+
+Before commencing the data visualisation process, it is important to get the dataset into the right format in R.
+
+### Transform dataset into dataframe for classification purposes
+```{r}
 class(dat3C)
 dat3C$class<-as.factor(dat3C$class)
 dat3C<-as.data.frame(dat3C)
 class(dat3C)
+```
 
-# Pelvic incidence
+## 2.2 Data Visualisation
+
+To gain an insight into the dataset's trends and patterns, we will map the data for each of the three classes, split by the six biomechanical features, using boxplots.
+
+### Pelvic incidence
+```{r}
 options(scipen=999)
 dat3C%>%group_by(class)%>%ggplot(aes(class,pelvic_incidence))+geom_boxplot(aes(class, pelvic_incidence,col=class))+ggtitle("Pelvic Incidence per Class with Individual Data")+xlab("Class")+ylab("Pelvic Incidence per Individual")+geom_point(alpha=0.1)
+```
 
-# Pelvic tilt
+From the plot, it would seem that pelvic incidence is a particularly strong predictor of Spondylolisthesis.
+
+### Pelvic tilt
+```{r}
 options(scipen=999)
 dat3C%>%group_by(class)%>%ggplot(aes(class,pelvic_tilt))+geom_boxplot(aes(class, pelvic_tilt,col=class))+ggtitle("Pelvic Tilt per Class with Individual Data")+xlab("Class")+ylab("Pelvic Tilt per Individual")+geom_point(alpha=0.1)
+```
 
-# Lumbar lordosis angle
+Pelvic tilt may be an important predictor of both Hernia and Spondylolisthesis.
+
+### Lumbar lordosis angle
+```{r}
 options(scipen=999)
 dat3C%>%group_by(class)%>%ggplot(aes(class,lumbar_lordosis_angle))+geom_boxplot(aes(class, lumbar_lordosis_angle,col=class))+ggtitle("Lumbar Lordosis Angle per Class with Individual Data")+xlab("Class")+ylab("Lumbar Lordosis Angle per Individual")+geom_point(alpha=0.1)
+```
 
-# Sacral slope
+The lumbar lordosis angle is generally higher in patients classified as having Spondylolisthesis.
+
+### Sacral slope
+```{r}
 options(scipen=999)
 dat3C%>%group_by(class)%>%ggplot(aes(class,sacral_slope))+geom_boxplot(aes(class, sacral_slope,col=class))+ggtitle("Sacral Slope per Class with Individual Data")+xlab("Class")+ylab("Sacral Slope per Individual")+geom_point(alpha=0.1)
+```
 
-# Pelvic radius
+The sacral slope is highest in individuals with Spondylolisthesis and lowest in those with Disk Herni, in stratified fashion.
+
+### Pelvic radius
+```{r}
 options(scipen=999)
 dat3C%>%group_by(class)%>%ggplot(aes(class,pelvic_radius))+geom_boxplot(aes(class, pelvic_radius,col=class))+ggtitle("Pelvic Radius per Class with Individual Data")+xlab("Class")+ylab("Pelvic Radius per Individual")+geom_point(alpha=0.1)
+```
 
-# Degree of spondylolisthesis
+The pelvic radius is similar across the three classes.
+
+### Degree of spondylolisthesis
+```{r}
 options(scipen=999)
 dat3C%>%group_by(class)%>%ggplot(aes(class,degree_spondylolisthesis))+geom_boxplot(aes(class, degree_spondylolisthesis,col=class))+ggtitle("Degree of Spondylolisthesis per Class with Individual Data")+xlab("Class")+ylab("Degree of Spondylolisthesis per Individual")+geom_point(alpha=0.1)
+```
 
-# Create train and test sets
+The degree of spondylolisthesis is only really relevant for the Spondylolisthesis patients.
+
+# 3. Results and Discussion
+
+Before applying machine learning algorithms, the first step is to split our data into train and test sets.
+
+## 3.1 Partitioning the data into train and test sets
+```{r}
 set.seed(1,sample.kind="Rounding")
 test_index1 <- createDataPartition(y = dat3C$class, times = 1, p = 0.2, list = FALSE) 
-train_set1 <- dat3C[-test_index1,] # Create train set
-test_set1 <- dat3C[test_index1,] # Create test set
+train_set1 <- dat3C[-test_index1,] ### Create train set
+test_set1 <- dat3C[test_index1,] ### Create test set
+```
 
-# k-nearest neighbors - train and test sets
+## 3.2 k-nearest neighbors - train and test sets
+```{r}
 fit_knn <- train(class ~ ., method = "knn",data = train_set1)
 fit_knn
 ggplot(fit_knn,highlight=TRUE)
@@ -89,15 +187,23 @@ fit_knn$bestTune
 fit_knn$finalModel
 y_hat_knn <- predict(fit_knn, test_set1, type = "raw")
 confusionMatrix(y_hat_knn, test_set1$class)$overall[["Accuracy"]]
+```
 
-# k-nearest neighbors - whole dataset
+The first step is to try and predict the appropriate class usng k-nearest neighbours. We can see that by using just one neighbour, we have a high accuracy (~0.90). However, we can do better.
+
+## 3.3 k-nearest neighbors - whole dataset
+```{r}
 fit_knn1 <- train(class ~ ., method = "knn",data = dat3C)
 fit_knn1
 ggplot(fit_knn1,highlight=TRUE)
 fit_knn1$bestTune
 fit_knn1$finalModel
+```
 
-# rpart - whole dataset
+We were able to accurately put the 100 Normal, 60 Disk Hernia, and 150 Spondylolisthesis patients into the right class.
+
+## 3.4 rpart - whole dataset
+```{r}
 install.packages("rpart")
 library(rpart)
 fit_2 <- rpart(class ~ ., data=dat3C)
@@ -122,8 +228,13 @@ tree_terms <-
   train_rpart$finalModel$frame$var[ind] %>% unique() %>%
   as.character()
 tree_terms
+```
 
-# rpart - train and test sets
+The next step is to use the partitioning method using the `rpart` function and package. This method generated two different trees. Degree of spondylolisthesis and sacral slope appear to be the most obvious predictors to clearly distinguish the three classes. We used the complexity parameter (cp) to decide whether or not to partition. We used the `prune` function to select the cp criterion.
+
+## 3.5 rpart - train and test sets
+```{r}
+library(caret)
 train_rpart1 <- train(class ~ pelvic_incidence + pelvic_tilt + lumbar_lordosis_angle + sacral_slope + pelvic_radius + degree_spondylolisthesis, method = "rpart", data = train_set1)
 train_rpart1
 confusionMatrix(predict(train_rpart1, test_set1), test_set1$class)$overall["Accuracy"]
@@ -132,14 +243,22 @@ tree_terms <-
   train_rpart1$finalModel$frame$var[ind] %>% unique() %>%
   as.character()
 tree_terms
+```
 
-# randomForest - whole dataset
+Using the train and test sets, we observe that the resulting accuracy is lower than that of our initial model. Degree of spondylolisthesis, sacral slope, and pelvic tilt, were the major predictors.
+
+## 3.6 randomForest - whole dataset
+```{r}
 library(randomForest)
 fit_3 <- randomForest(class ~ ., data=dat3C)
 fit_3
 plot(fit_3)
+```
 
-# randomForest - train and test sets
+Although the classification trees thus far have been easily interpretable, it is useful to experiment with random forests to address the shortcomings of these previous methods. In particular, this method appears more robust as it averages across multiple decision trees, and improves upon decision trees which tend to over-fit to the training set.
+
+## 3.7 randomForest - train and test sets
+```{r}
 nodesize <- seq(1, 50, 10)
 acc <- sapply(nodesize, function(ns){
   train(class ~ ., method = "rf", data = train_set1, tuneGrid = data.frame(mtry = 2),
@@ -149,8 +268,12 @@ qplot(nodesize, acc)
 train_rf <- randomForest(class ~ ., data=train_set1, ns = ns[which.max(acc)])
 train_rf
 confusionMatrix(predict(train_rf, test_set1), test_set1$class)$overall["Accuracy"]
+```
 
-# Multiclass support vector machine
+Using the train and test sets, we can see that our accuracy is substantially higher in comparison to the partitioning function. We used the `caret` package to optimise over the minimum node size.
+
+## 3.8 Multiclass support vector machine
+```{r}
 install.packages("e1071", repos="https://cran.r-project.org/package=e1071")
 library(e1071)
 svm1 <- svm(class~., data=train_set1, 
@@ -161,67 +284,116 @@ svm1$SV
 predict<-predict(svm1,test_set1)
 xtab<-table(test_set1$class,predict)
 xtab
-(8+15+29)/nrow(test_set1)
+(7+17+27)/nrow(test_set1)
+```
 
-# Download file part 2
+Support vector machines are common approaches to classification tasks. The final accuracy was approximately 0.82, using the `e1071` package.
+
+# 4. Introduction - Part 2
+
+## 4.1 Overview/Executive Summary
+
+Part 2 of the project entailed using similar methods to classify patients into Normal (100 patients) or Abnormal (210 patients) classes. Here, the Spondylolisthesis and Disk Hernia classes were merged into one.
+
+## 4.2 Loading the Data
+
+### Note: this process could take a couple of minutes
+
+```{r data}
+### Download file part 2
 library(readr)
 filename <- "column_2C_weka.csv"
 dat<-read_csv(filename)
+```
 
-# Summarise dataset
+## 4.3 Tidy data and Summary
+```{r}
+### Summarising `dat` confirms that the dataset is comprised of 310 observations of 7 variables:
 table(dat$class)
 summary(dat)
 
-# Head dataset
+### We use the `head` function on the dataset as before:
 head(dat)
 
-# Tidy data
+### We check the data is in tidy format:
 dat%>%as_tibble
 
-# Check missing data
+### We ensure there is no missing data:
 any(is.na(dat))
 sum(is.na(dat))
+```
 
-# Transform dataset into dataframe for classification purposes
+# 5. Methods and Analysis
+
+## 5.1 Data Cleaning and Exploration
+
+### Transform dataset into dataframe for classification purposes
+```{r}
 class(dat)
 dat$class<-as.factor(dat$class)
 dat<-as.data.frame(dat)
 class(dat)
+```
 
-# Change column name for simplicity
+### Change column name for simplicity
+```{r}
 colnames(dat)[colnames(dat)=="pelvic_tilt numeric"] <- "pelvic_tilt_numeric"
+```
 
-# Pelvic incidence
+For presentation and simplicity purposes, one of the column labels was fixed.
+
+## 5.2 Data Visualisation
+
+### Pelvic incidence
+```{r}
 options(scipen=999)
 dat%>%group_by(class)%>%ggplot(aes(class,pelvic_incidence))+geom_boxplot(aes(class, pelvic_incidence,col=class))+ggtitle("Pelvic Incidence per Class with Individual Data")+xlab("Class")+ylab("Pelvic Incidence per Individual")+geom_point(alpha=0.1)
+```
 
-# Pelvic tilt
+### Pelvic tilt
+```{r}
 options(scipen=999)
 dat%>%group_by(class)%>%ggplot(aes(class,pelvic_tilt_numeric))+geom_boxplot(aes(class, pelvic_tilt_numeric,col=class))+ggtitle("Pelvic Tilt per Class with Individual Data")+xlab("Class")+ylab("Pelvic Tilt per Individual")+geom_point(alpha=0.1)
+```
 
-# Lumbar lordosis angle
+### Lumbar lordosis angle
+```{r}
 options(scipen=999)
 dat%>%group_by(class)%>%ggplot(aes(class,lumbar_lordosis_angle))+geom_boxplot(aes(class, lumbar_lordosis_angle,col=class))+ggtitle("Lumbar Lordosis Angle per Class with Individual Data")+xlab("Class")+ylab("Lumbar Lordosis Angle per Individual")+geom_point(alpha=0.1)
+```
 
-# Sacral slope
+### Sacral slope
+```{r}
 options(scipen=999)
 dat%>%group_by(class)%>%ggplot(aes(class,sacral_slope))+geom_boxplot(aes(class, sacral_slope,col=class))+ggtitle("Sacral Slope per Class with Individual Data")+xlab("Class")+ylab("Sacral Slope per Individual")+geom_point(alpha=0.1)
+```
 
-# Pelvic radius
+### Pelvic radius
+```{r}
 options(scipen=999)
 dat%>%group_by(class)%>%ggplot(aes(class,pelvic_radius))+geom_boxplot(aes(class, pelvic_radius,col=class))+ggtitle("Pelvic Radius per Class with Individual Data")+xlab("Class")+ylab("Pelvic Radius per Individual")+geom_point(alpha=0.1)
+```
 
-# Degree of spondylolisthesis
+### Degree of spondylolisthesis
+```{r}
 options(scipen=999)
 dat%>%group_by(class)%>%ggplot(aes(class,degree_spondylolisthesis))+geom_boxplot(aes(class, degree_spondylolisthesis,col=class))+ggtitle("Degree of Spondylolisthesis per Class with Individual Data")+xlab("Class")+ylab("Degree of Spondylolisthesis per Individual")+geom_point(alpha=0.1)
+```
 
-# Create train and test sets
+We can see that higher rates of all the variables are observed in Abnormal patients, with the exception of pelvic radius, which is smaller in this class.
+
+# 6. Results and Discussion
+
+## 6.1 Partitioning the data into train and test sets
+```{r}
 set.seed(1,sample.kind="Rounding")
 test_index <- createDataPartition(y = dat$class, times = 1, p = 0.2, list = FALSE) 
-train_set <- dat[-test_index,] # Create train set
-test_set <- dat[test_index,] # Create test set
+train_set <- dat[-test_index,] ### Create train set
+test_set <- dat[test_index,] ### Create test set
+```
 
-# k-nearest neighbors - train and test sets
+## 6.2 k-nearest neighbors - train and test sets
+```{r}
 fit_knn2 <- train(class ~ ., method = "knn",data = train_set)
 fit_knn2
 ggplot(fit_knn2,highlight=TRUE)
@@ -229,15 +401,23 @@ fit_knn2$bestTune
 fit_knn2$finalModel
 y_hat_knn1 <- predict(fit_knn2, test_set, type = "raw")
 confusionMatrix(y_hat_knn1, test_set$class)$overall[["Accuracy"]]
+```
 
-# k-nearest neighbors - whole dataset
+The k-nearest neighbours approach once again provides very good accuracy (~0.92).
+
+## 6.3 k-nearest neighbors - whole dataset
+```{r}
 fit_knn3 <- train(class ~ ., method = "knn",data = dat)
 fit_knn3
 ggplot(fit_knn3,highlight=TRUE)
 fit_knn3$bestTune
 fit_knn3$finalModel
+```
 
-# rpart - whole dataset
+This successfully sorts the data into 210 Abnormal and 100 Normal patients.
+
+## 6.4 rpart - whole dataset
+```{r}
 install.packages("rpart")
 library(rpart)
 fit_4 <- rpart(class ~ ., data=dat)
@@ -262,8 +442,12 @@ tree_terms <-
   train_rpart2$finalModel$frame$var[ind] %>% unique() %>%
   as.character()
 tree_terms
+```
 
-# rpart - train and test sets
+Using the same methods as before, the partitioning function revealed degree of spondylolisthesis, pelvic radius, and sacral slope were important predictors.
+
+## 6.5 rpart - train and test sets
+```{r}
 train_rpart3 <- train(class ~., method = "rpart", data = train_set)
 train_rpart3
 plot(train_rpart3)
@@ -273,14 +457,20 @@ tree_terms <-
   train_rpart3$finalModel$frame$var[ind] %>% unique() %>%
   as.character()
 tree_terms
+```
 
-# randomForest - whole dataset
+When applied to the train and test sets, this generated an accuracy of approximately 0.89!
+
+## 6.6 randomForest - whole dataset
+```{r}
 library(randomForest)
 fit_5 <- randomForest(class ~ ., data=dat)
 fit_5
 plot(fit_5)
+```
 
-# randomForest - train and test sets
+## 6.7 randomForest - train and test sets
+```{r}
 nodesize1 <- seq(1, 50, 10)
 acc1 <- sapply(nodesize, function(ns){
   train(class ~ ., method = "rf", data = train_set, tuneGrid = data.frame(mtry = 2),
@@ -290,8 +480,12 @@ qplot(nodesize1, acc1)
 train_rf1 <- randomForest(class ~ ., data=train_set, ns = ns[which.max(acc)])
 train_rf1
 confusionMatrix(predict(train_rf1, test_set), test_set$class)$overall["Accuracy"]
+```
 
-# Multiclass support vector machine
+The random forest performed similarly in part 2 as in part 1, generating an accuracy of about 0.87.
+
+## 6.8 Multiclass support vector machine
+```{r}
 install.packages("e1071")
 library(e1071)
 svm2 <- svm(class~., data=train_set, 
@@ -302,4 +496,18 @@ svm2$SV
 predict<-predict(svm2,test_set)
 xtab<-table(test_set$class,predict)
 xtab
-(39+15)/nrow(test_set)
+(39+17)/nrow(test_set)
+```
+
+The multiclass support vector machine performed much better in part 2, generating an accuracy of 0.90.
+
+# 7. Conclusion
+
+## 7.1 Summary
+
+A variety of models were tested on the two datasets to classify patients based on six biomechanical features. This work may have important implications for medicial practitioners, improving diagnostic criteria for each of the conditions (i.e. Disk Hernia and Spondylolisthesis), as well as helping to detect abnormalities to begin with (part 2), even if these are not distinguished into more specific conditions.
+
+## 7.2 Limitations and future work
+
+A broader set of predictors may be needed to improve the accuracy of the diagnosis. Future research could expand on the used methodologies, exploring logistic regression and neural network analyses.
+
